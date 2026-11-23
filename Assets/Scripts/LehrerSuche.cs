@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using UnityEngine;
 using UnityEngine.Networking;
 
 // Unity-Version des Konsolenprogramms (Program.cs): UnityWebRequest + Coroutine statt HttpClient + async
@@ -46,6 +47,8 @@ public static class LehrerSuche
             teachersToProcess[absoluteUrl] = match.Groups["Name"].Value.Trim();
         }
 
+        Debug.Log($"Raum {raumEingabe}: {teachersToProcess.Count} Lehrer gefunden");
+
         if (teachersToProcess.Count == 0)
         {
             fertig(null);
@@ -76,7 +79,17 @@ public static class LehrerSuche
     {
         using (UnityWebRequest request = UnityWebRequest.Get(url))
         {
+            // Test 6: jeder Request-Start wird direkt vor dem Aufruf geloggt
+            Debug.Log($"GET Start: {url}");
             yield return request.SendWebRequest();
+
+            // Tests 3, 4, 7: URL, HTTP-Status und Ergebnis nach dem Request loggen
+            string meldung = $"GET Ende: {url} -> HTTP {request.responseCode} ({request.result})";
+            if (request.result == UnityWebRequest.Result.Success)
+                Debug.Log(meldung);
+            else
+                Debug.LogWarning($"{meldung} Fehler: {request.error}");
+
             ergebnis(request.result == UnityWebRequest.Result.Success ? request.downloadHandler.text : null);
         }
     }
